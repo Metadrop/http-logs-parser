@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ ${#@} -lt 2 ]; then
+  echo "Usage: $0 <path-to-logfile> <log-format>"
+  echo "Examples:"
+  echo "  $0 /var/log/apache2/access.log combined"
+  exit 1
+fi
+LOG_FILE=$1
+LOG_FILE_BASENAME=$(basename $LOG_FILE)
+LOG_FORMAT=$2
+
+REPORT_FILE=reports/report-$(date +%Y%m%d-%s).html
+
+DOCKER_IMAGE_DEFAULT="ghcr.io/metadrop/http-logs-parser:latest"
+
+if [ -f .env ]; then
+  source .env
+fi
+
+DOCKER_LOG_FILE="/app/$LOG_FILE_BASENAME"
+DOCKER_REPORT_FILE="/$REPORT_FILE"
+docker run --rm -it \
+  -u $(id -u) \
+  --mount type=bind,src=./reports,dst=/reports \
+  --mount type=bind,src=$LOG_FILE,dst=$DOCKER_LOG_FILE \
+  ${DOCKER_IMAGE:-$DOCKER_IMAGE_DEFAULT} \
+  --log-file=$DOCKER_LOG_FILE \
+  --log-format=$LOG_FORMAT \
+  --report-file=$DOCKER_REPORT_FILE
+
+if [ $? -eq 0 ]; then
+  echo "Generated report for ${LOG_FILE_BASENAME} at ${REPORT_FILE}"
+  x-www-browser $REPORT_FILE
+fi
