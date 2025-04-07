@@ -1,0 +1,3 @@
+---
+
+acquia: "%h %^ %^ [%d:%t %^] \"%r\" %s %b \"%R\" \"%u\" vhost=%^ host=%v hosting_site=%^ pid=%^ request_time=%D forwarded_for=\"~h{, }\" request_id=\"%^\" location=\"%^\""
